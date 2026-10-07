@@ -12,7 +12,7 @@ const base = {
   APP_WEBHOOK: `${APP}/webhook`,
   DATABASE_PATH: ":memory:",
   GRAPH_API_BASE: MOCK,
-  INBOX_PASSWORD: "team-pass",
+  INBOX_PASSWORD: "team-pass ",
   SESSION_SECRET: "session-secret",
   WEBHOOK_VERIFY_TOKEN: "verify-me",
   // The app gets its WhatsApp details from the setup page, not .env
@@ -57,7 +57,7 @@ async function main() {
   assert.equal(r.status, 401);
   r = await api("/contacts");
   assert.equal(r.status, 401);
-  r = await api("/login", { method: "POST", body: JSON.stringify({ name: "Asha", password: "team-pass" }) });
+  r = await api("/login", { method: "POST", body: JSON.stringify({ name: "Asha", password: " team-pass\n" }) });
   token = (await r.json()).token;
   assert.ok(token);
   console.log("✓ team sign-in");

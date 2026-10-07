@@ -13,9 +13,11 @@ function sign(payload: string) {
 }
 
 export function login(name: string, password: string): string | null {
-  const a = Buffer.from(password);
-  const b = Buffer.from(config.inboxPassword);
-  if (!config.inboxPassword || a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  // Trim both sides: a stray space or newline pasted into the host's env settings is the usual culprit
+  const expected = config.inboxPassword.trim();
+  const a = Buffer.from(password.trim());
+  const b = Buffer.from(expected);
+  if (!expected || a.length !== b.length || !timingSafeEqual(a, b)) return null;
   const payload = Buffer.from(JSON.stringify({ name, exp: Date.now() + TTL_MS })).toString("base64url");
   return `${payload}.${sign(payload)}`;
 }

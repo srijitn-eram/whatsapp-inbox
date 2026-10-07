@@ -32,6 +32,10 @@ api.post("/login", (req, res) => {
     res.status(400).json({ error: "Enter your name" });
     return;
   }
+  if (!config.inboxPassword.trim()) {
+    res.status(503).json({ error: "No team password is set on the server yet. Add INBOX_PASSWORD in your host's environment settings and redeploy." });
+    return;
+  }
   const token = login(String(name).trim(), String(password ?? ""));
   if (!token) {
     res.status(401).json({ error: "Wrong password" });
