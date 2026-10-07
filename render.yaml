@@ -1,0 +1,18 @@
+# One-click deploy on Render: https://render.com/deploy
+services:
+  - type: web
+    name: whatsapp-inbox
+    runtime: docker
+    plan: starter          # paid plan needed for the persistent disk that holds your messages
+    healthCheckPath: /api/health
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: INBOX_PASSWORD
+        sync: false        # Render asks you for this when you deploy
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_PATH
+        value: /data/whatsapp.db

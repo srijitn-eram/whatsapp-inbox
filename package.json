@@ -1,0 +1,12 @@
+{
+  "name": "whatsapp-platform",
+  "private": true,
+  "scripts": {
+    "setup": "npm --prefix server install && npm --prefix web install",
+    "build": "npm --prefix web run build && npm --prefix server run build",
+    "start": "npm --prefix server start",
+    "dev": "npm --prefix server run dev & npm --prefix web run dev",
+    "demo": "npm --prefix server run mock",
+    "test": "npm --prefix server test"
+  }
+}
