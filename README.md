@@ -1,5 +1,7 @@
 # WhatsApp Team Inbox
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/srijitn-eram/whatsapp-inbox)
+
 A self-hosted messaging platform on the official **WhatsApp Business Cloud API** (Meta). Your team signs in to one shared inbox and chats with customers from your business number.
 
 **What it does**
@@ -23,8 +25,7 @@ A self-hosted messaging platform on the official **WhatsApp Business Cloud API**
 
 The app has to live at a public https address so WhatsApp can deliver messages to it.
 
-**Render (recommended):** push this folder to a GitHub repo, then open
-`https://render.com/deploy?repo=https://github.com/YOU/YOUR-REPO`. Render reads `render.yaml`, asks you to choose a team password (`INBOX_PASSWORD`), and builds it. It uses the Starter plan (about $7/month plus $0.25/GB for the disk that keeps your messages; free Render instances wipe their disk on restart, so they lose your history).
+**Render (recommended):** press the **Deploy to Render** button at the top of this page (sign in to Render with GitHub and allow it to see this repo). Render reads `render.yaml`, asks you to choose a team password (`INBOX_PASSWORD`), and builds it. It uses the Starter plan (about $7/month plus $0.25/GB for the disk that keeps your messages; free Render instances wipe their disk on restart, so they lose your history).
 
 **Anywhere else with Docker** (Railway, Fly.io, a VPS): build the included `Dockerfile`, mount a persistent volume at `/data`, and set `INBOX_PASSWORD` and `SESSION_SECRET` (`openssl rand -hex 32`). If the host doesn't tell the app its public address, also set `PUBLIC_URL=https://your-domain`.
 
