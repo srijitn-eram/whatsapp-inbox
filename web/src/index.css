@@ -100,6 +100,9 @@ h2 { font-size: 17px; }
   box-shadow: 0 2px 16px rgba(0,0,0,.08);
 }
 .card p { margin: 0; }
+.card label.check { display: flex; align-items: center; gap: 8px; }
+.card label.check input { width: auto; }
+.card .link { background: none; border: 0; color: var(--brand); font-size: 13px; padding: 0; cursor: pointer; }
 
 /* Layout */
 .app { display: grid; grid-template-columns: 360px 1fr auto; height: 100%; max-width: 1600px; margin: 0 auto; background: var(--panel); }

@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { config, missingConfig, whatsappConnected } from "./config.js";
+import { canChooseTeamPassword, config, whatsappConnected } from "./config.js";
 import { setup } from "./setup.js";
-import { login, requireAuth } from "./auth.js";
+import { hashPassword, issueToken, passwordMatches, requireAuth } from "./auth.js";
 import {
   deleteContact,
   getContact,
@@ -14,6 +14,7 @@ import {
   updateOutgoing,
   upsertContact,
   db,
+  saveSettings,
 } from "./db.js";
 import { addClient, broadcast } from "./events.js";
 import { downloadMedia, GraphError, listTemplates, markRead, sendTemplate, sendText, type TemplateComponentParam } from "./whatsapp.js";
@@ -23,25 +24,43 @@ export const api = Router();
 const SESSION_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 api.get("/health", (_req, res) => {
-  res.json({ ok: true, missingConfig: missingConfig(), connected: whatsappConnected(), templatesEnabled: Boolean(config.businessAccountId) });
+  res.json({ ok: true, choosePassword: canChooseTeamPassword(), connected: whatsappConnected(), templatesEnabled: Boolean(config.businessAccountId) });
 });
 
 api.post("/login", (req, res) => {
-  const { name, password } = req.body ?? {};
-  if (!name?.trim()) {
+  const name = String(req.body?.name ?? "").trim();
+  const password = String(req.body?.password ?? "");
+  if (!name) {
     res.status(400).json({ error: "Enter your name" });
     return;
   }
-  if (!config.inboxPassword.trim()) {
-    res.status(503).json({ error: "No team password is set on the server yet. Add INBOX_PASSWORD in your host's environment settings and redeploy." });
+  if (!passwordMatches(password)) {
+    const hint = canChooseTeamPassword() ? " You can choose a new team password instead." : "";
+    res.status(401).json({ error: `That password doesn't match the team password.${hint}` });
     return;
   }
-  const token = login(String(name).trim(), String(password ?? ""));
-  if (!token) {
-    res.status(401).json({ error: "Wrong password" });
+  res.json({ token: issueToken(name), name });
+});
+
+// First run (or after RESET_TEAM_PASSWORD=true): the person signing in chooses the team password
+api.post("/team-password", (req, res) => {
+  const name = String(req.body?.name ?? "").trim();
+  const password = String(req.body?.password ?? "").trim();
+  if (!canChooseTeamPassword()) {
+    res.status(403).json({ error: "A team password is already set. Sign in with it instead." });
     return;
   }
-  res.json({ token, name: String(name).trim() });
+  if (!name) {
+    res.status(400).json({ error: "Enter your name" });
+    return;
+  }
+  if (password.length < 6) {
+    res.status(400).json({ error: "Use at least 6 characters" });
+    return;
+  }
+  saveSettings({ TEAM_PASSWORD_HASH: hashPassword(password) });
+  config.resetTeamPassword = false; // a reset allows one new password per restart
+  res.json({ token: issueToken(name), name });
 });
 
 api.use(requireAuth);

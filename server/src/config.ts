@@ -20,7 +20,12 @@ export const config = {
   port: Number(env("PORT", "3000")),
   databasePath: env("DATABASE_PATH", "./data/whatsapp.db"),
   inboxPassword: env("INBOX_PASSWORD"),
-  sessionSecret: env("SESSION_SECRET"),
+  // Generated and saved on first boot when not set in the environment
+  get sessionSecret() { return pick("SESSION_SECRET"); },
+  // Set from the sign-in page on first run; INBOX_PASSWORD from the environment also works
+  get teamPasswordHash() { return saved.TEAM_PASSWORD_HASH ?? ""; },
+  // RESET_TEAM_PASSWORD=true lets the next visitor choose a new team password
+  resetTeamPassword: /^(1|true|yes)$/i.test(env("RESET_TEAM_PASSWORD").trim()),
   // Render and Railway expose the public address of the service automatically
   publicUrl: (env("PUBLIC_URL") || env("RENDER_EXTERNAL_URL") || (env("RAILWAY_PUBLIC_DOMAIN") && `https://${env("RAILWAY_PUBLIC_DOMAIN")}`)).replace(/\/$/, ""),
   graphBase: `${env("GRAPH_API_BASE", "https://graph.facebook.com").replace(/\/$/, "")}/${env("GRAPH_API_VERSION", "v23.0")}`,
@@ -32,13 +37,12 @@ export const config = {
   get verifyToken() { return pick("WEBHOOK_VERIFY_TOKEN"); },
 };
 
-/** Settings that must be in the environment before anyone can sign in. */
-export function missingConfig(): string[] {
-  const required: [string, string][] = [
-    ["INBOX_PASSWORD", config.inboxPassword],
-    ["SESSION_SECRET", config.sessionSecret],
-  ];
-  return required.filter(([, v]) => !v).map(([k]) => k);
+/**
+ * The team password can be chosen in the app until WhatsApp is connected, so
+ * whoever deploys it never depends on getting an environment variable right.
+ */
+export function canChooseTeamPassword(): boolean {
+  return config.resetTeamPassword || (!config.teamPasswordHash && !whatsappConnected());
 }
 
 export function whatsappConnected(): boolean {

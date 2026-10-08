@@ -21,18 +21,23 @@ export default function App() {
 function Login({ onLogin }: { onLogin: (s: { token: string; name: string }) => void }) {
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
+  const [show, setShow] = useState(false)
   const [error, setError] = useState('')
-  const [missing, setMissing] = useState<string[]>([])
+  const [canChoose, setCanChoose] = useState(false)
+  const [choosing, setChoosing] = useState(false)
 
   useEffect(() => {
-    api<{ missingConfig: string[] }>('/health').then((h) => setMissing(h.missingConfig)).catch(() => {})
+    api<{ choosePassword: boolean }>('/health')
+      .then((h) => (setCanChoose(h.choosePassword), setChoosing(h.choosePassword)))
+      .catch(() => {})
   }, [])
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     try {
-      onLogin(await api<{ token: string; name: string }>('/login', { method: 'POST', json: { name, password } }))
+      const path = choosing ? '/team-password' : '/login'
+      onLogin(await api<{ token: string; name: string }>(path, { method: 'POST', json: { name, password } }))
     } catch (err) {
       setError((err as Error).message)
     }
@@ -45,19 +50,36 @@ function Login({ onLogin }: { onLogin: (s: { token: string; name: string }) => v
           <span className="logo" aria-hidden>✆</span>
           <h1>Team Inbox</h1>
         </div>
-        <p className="muted">Sign in to reply to customers on WhatsApp.</p>
+        <p className="muted">
+          {choosing
+            ? 'Welcome! Choose the password your team will use to sign in.'
+            : 'Sign in to reply to customers on WhatsApp.'}
+        </p>
         <label>
           Your name
           <input value={name} onChange={(e) => setName(e.target.value)} autoFocus placeholder="Shown on messages you send" />
         </label>
         <label>
-          Team password
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          {choosing ? 'New team password' : 'Team password'}
+          <input
+            type={show ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={choosing ? 'At least 6 characters' : undefined}
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+          />
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} /> Show password
         </label>
         {error && <p className="error">{error}</p>}
-        <button className="primary" type="submit">Sign in</button>
-        {missing.length > 0 && (
-          <p className="warn">Server is missing settings: {missing.join(', ')}. See the README.</p>
+        <button className="primary" type="submit">{choosing ? 'Set password and sign in' : 'Sign in'}</button>
+        {canChoose && (
+          <button type="button" className="link" onClick={() => (setChoosing(!choosing), setError(''))}>
+            {choosing ? 'I already have a team password' : 'Choose a new team password'}
+          </button>
         )}
       </form>
     </main>

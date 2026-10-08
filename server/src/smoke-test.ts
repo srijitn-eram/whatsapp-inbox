@@ -60,7 +60,18 @@ async function main() {
   r = await api("/login", { method: "POST", body: JSON.stringify({ name: "Asha", password: " team-pass\n" }) });
   token = (await r.json()).token;
   assert.ok(token);
-  console.log("✓ team sign-in");
+  // Before WhatsApp is connected, the team password can be chosen in the app
+  assert.equal((await (await api("/health")).json()).choosePassword, true);
+  r = await api("/team-password", { method: "POST", body: JSON.stringify({ name: "Asha", password: "Chosen 123" }) });
+  assert.ok((await r.json()).token);
+  r = await api("/login", { method: "POST", body: JSON.stringify({ name: "Ravi", password: "Chosen 123 " }) });
+  assert.equal(r.status, 200);
+  r = await api("/login", { method: "POST", body: JSON.stringify({ name: "Ravi", password: "team-pass" }) });
+  assert.equal(r.status, 200);
+  assert.equal((await (await api("/health")).json()).choosePassword, false);
+  r = await api("/team-password", { method: "POST", body: JSON.stringify({ name: "X", password: "takeover" }) });
+  assert.equal(r.status, 403);
+  console.log("✓ team sign-in and choosing a password");
 
 
   // Connect WhatsApp from the setup page

@@ -10,8 +10,6 @@ services:
       mountPath: /data
       sizeGB: 1
     envVars:
-      - key: INBOX_PASSWORD
-        sync: false        # Render asks you for this when you deploy
       - key: SESSION_SECRET
         generateValue: true
       - key: DATABASE_PATH

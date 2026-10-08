@@ -25,13 +25,13 @@ A self-hosted messaging platform on the official **WhatsApp Business Cloud API**
 
 The app has to live at a public https address so WhatsApp can deliver messages to it.
 
-**Render (recommended):** press the **Deploy to Render** button at the top of this page (sign in to Render with GitHub and allow it to see this repo). Render reads `render.yaml`, asks you to choose a team password (`INBOX_PASSWORD`), and builds it. It uses the Starter plan (about $7/month plus $0.25/GB for the disk that keeps your messages; free Render instances wipe their disk on restart, so they lose your history).
+**Render (recommended):** press the **Deploy to Render** button at the top of this page (sign in to Render with GitHub and allow it to see this repo). Render reads `render.yaml` and builds it. It uses the Starter plan (about $7/month plus $0.25/GB for the disk that keeps your messages; free Render instances wipe their disk on restart, so they lose your history).
 
-**Anywhere else with Docker** (Railway, Fly.io, a VPS): build the included `Dockerfile`, mount a persistent volume at `/data`, and set `INBOX_PASSWORD` and `SESSION_SECRET` (`openssl rand -hex 32`). If the host doesn't tell the app its public address, also set `PUBLIC_URL=https://your-domain`.
+**Anywhere else with Docker** (Railway, Fly.io, a VPS): build the included `Dockerfile`, and mount a persistent volume at `/data`. If the host doesn't tell the app its public address, also set `PUBLIC_URL=https://your-domain`.
 
 ### Step 2: Connect your WhatsApp number
 
-Open your app's address, sign in with any name and the team password, and the **Connect WhatsApp** page walks you through it:
+Open your app's address. The first time, it asks you to choose the team password (everyone on your team signs in with it, plus their own name). Forgot it? Set `RESET_TEAM_PASSWORD=true` in your host's environment settings, redeploy, choose a new one, then remove the setting. Once you're in, the **Connect WhatsApp** page walks you through it:
 
 1. [Create a Meta app](https://developers.facebook.com/apps/creation/) of type **Business** and add the **WhatsApp** product. Meta gives you a free test number straight away; add your real business number under **WhatsApp › API Setup** when you're ready.
 2. Copy the **App ID** and **App secret** from **App settings › Basic**.

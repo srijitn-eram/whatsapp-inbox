@@ -59,6 +59,7 @@ loadSavedSettings(
 );
 // Every install gets its own webhook verify token unless one is set in .env
 if (!config.verifyToken) saveSettings({ WEBHOOK_VERIFY_TOKEN: randomBytes(16).toString("hex") });
+if (!config.sessionSecret) saveSettings({ SESSION_SECRET: randomBytes(32).toString("hex") });
 
 export interface Contact {
   wa_id: string;
